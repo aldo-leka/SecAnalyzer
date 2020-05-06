@@ -1,2 +1,2 @@
 # SecAnalyzer
- Edgar SEC scraper and analyzer
+ Edgar SEC scraper and analyzer.
