@@ -1,5 +1,5 @@
 import { Component, Inject } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { apiConfig } from '../app-config';
 
 @Component({
@@ -7,18 +7,16 @@ import { apiConfig } from '../app-config';
   templateUrl: './fetch-data.component.html'
 })
 export class FetchDataComponent {
-  public forecasts: WeatherForecast[];
-
+  result: string;
+  httpOptions = {
+    headers: new HttpHeaders({
+      "Content-Type": "text"
+    }),
+  };
+  
   constructor(http: HttpClient) {
-    http.get<WeatherForecast[]>(apiConfig.webApi + '/weatherforecast').subscribe(result => {
-      this.forecasts = result;
-    }, error => console.error(error));
+    http.get<string>(apiConfig.webApi + '/values', {responseType: 'text'}).subscribe((result: string) => {
+      this.result = result;
+    }, (error: { error: any; }) => console.error(error.error));
   }
-}
-
-interface WeatherForecast {
-  date: string;
-  temperatureC: number;
-  temperatureF: number;
-  summary: string;
 }
