@@ -15,7 +15,7 @@ export class FetchDataComponent {
   };
   
   constructor(http: HttpClient) {
-    http.get<string>(apiConfig.webApi + '/values', {responseType: 'text'}).subscribe((result: string) => {
+    http.get<string>(apiConfig.webApi + '/values').subscribe((result: string) => {
       this.result = result;
     }, (error: { error: any; }) => console.error(error.error));
   }

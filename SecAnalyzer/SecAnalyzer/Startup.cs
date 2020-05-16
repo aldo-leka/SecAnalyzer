@@ -1,9 +1,13 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.SpaServices.AngularCli;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using SecAnalyzer.Interfaces;
+using SecAnalyzer.Models;
+using SecAnalyzer.Services;
 
 namespace SecAnalyzer
 {
@@ -26,6 +30,11 @@ namespace SecAnalyzer
             {
                 configuration.RootPath = "ClientApp/dist";
             });
+
+            services.AddDbContext<SecAnalyzerContext>(
+                options => options.UseSqlServer(Configuration.GetConnectionString("SecAnalyzerDatabase")));
+            services.AddScoped<IConfig, Services.Config>();
+            services.AddScoped<IFmpCloudClient, FmpCloudClient>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
