@@ -9,11 +9,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-//Unfortunately my source of data is not reliable since I ran tests for the "expensivemarkets" endpoint,
-//and I get a complete loss on initial capital while in real life, the SP500 has positive returns.
-//I have a huge problem that from the current financial API, I only get financial data going back to 2000
-//for the companies which are still alive today - so I can't test on companies that got delisted but this is the 
-//best I could come up with so far...
 namespace SecAnalyzer.Controllers
 {
     [Route("api/[controller]")]
@@ -47,12 +42,15 @@ namespace SecAnalyzer.Controllers
             //tangible assets = propertyPlantEquipmentNet + totalCurrentAssets
             //1.2 Earnings yield desc
             //ey = net income / market cap or net income / (market cap + debt - cash)
-            //https://fmpcloud.io/api/v3/key-metrics/AAPL?apikey=2dc05ef6c548f47f23e74af47cfbb80d returnOnTangibleAssets + earningsYield
+            //https://fmpcloud.io/api/v3/key-metrics/AAPL?apikey=apikey returnOnTangibleAssets + earningsYield
 
             await Task.Delay(0);
             return "Magic Formula";
         }
 
+        /// <summary>
+        /// Get top 30 cheapest stocks based on enterprise value / operating earnings aka VC acquirer's multiple
+        /// </summary>
         [HttpGet("acquirersmultiple")]
         public string GetAcquirersMultiple(decimal initialAmount = 10000)
         {
@@ -104,28 +102,26 @@ namespace SecAnalyzer.Controllers
                         .ToList()
                     );
 
-                    //TODO
-                    //The numbers aint making sense - or I can't accept them...one or the either.
-                    var temp = stocks.Select(stock => new
-                    {
-                        //TODO
-                        //Add price of specific reporting date (FilingDatePrice) and 1 year after that (FilingDateAfterOneYearPrice).
-                        AcquirersMultiple = (decimal)(stock.MarketCap + stock.TotalDebt - stock.Cash)
-                                / (stock.Revenue - stock.CostOfRevenue - stock.ResearchAndDevelopmentCosts - stock.SellingGeneralAndAdministrativeCosts - stock.DepreciationAndAmortization),
-                        BFirstPartOfEquation = stock.MarketCap + stock.TotalDebt - stock.Cash,
-                        CSecondPartOfEquation = stock.Revenue - stock.CostOfRevenue - stock.ResearchAndDevelopmentCosts - stock.SellingGeneralAndAdministrativeCosts - stock.DepreciationAndAmortization,
-                        stock.MarketCap,
-                        stock.TotalDebt,
-                        stock.Cash,
-                        stock.Revenue,
-                        stock.CostOfRevenue,
-                        stock.ResearchAndDevelopmentCosts,
-                        stock.SellingGeneralAndAdministrativeCosts,
-                        stock.DepreciationAndAmortization
-                    })
-                    .OrderBy(entity => entity.AcquirersMultiple)
-                    .Take(30)
-                    .ToList();
+                    //var temp = stocks.Select(stock => new
+                    //{
+                    //    //TODO
+                    //    //Add price of specific reporting date (FilingDatePrice) and 1 year after that (FilingDateAfterOneYearPrice).
+                    //    AcquirersMultiple = (decimal)(stock.MarketCap + stock.TotalDebt - stock.Cash)
+                    //            / (stock.Revenue - stock.CostOfRevenue - stock.ResearchAndDevelopmentCosts - stock.SellingGeneralAndAdministrativeCosts - stock.DepreciationAndAmortization),
+                    //    BFirstPartOfEquation = stock.MarketCap + stock.TotalDebt - stock.Cash,
+                    //    CSecondPartOfEquation = stock.Revenue - stock.CostOfRevenue - stock.ResearchAndDevelopmentCosts - stock.SellingGeneralAndAdministrativeCosts - stock.DepreciationAndAmortization,
+                    //    stock.MarketCap,
+                    //    stock.TotalDebt,
+                    //    stock.Cash,
+                    //    stock.Revenue,
+                    //    stock.CostOfRevenue,
+                    //    stock.ResearchAndDevelopmentCosts,
+                    //    stock.SellingGeneralAndAdministrativeCosts,
+                    //    stock.DepreciationAndAmortization
+                    //})
+                    //.OrderBy(entity => entity.AcquirersMultiple)
+                    //.Take(30)
+                    //.ToList();
 
                     //Possibilities
                     //Negative EV, Positive earnings = - GOOD (more cash, positive earnings)
@@ -238,7 +234,6 @@ namespace SecAnalyzer.Controllers
             return $"Done with {apiStocks.Count()} stocks";
         }
 
-        //2nd attempt - use an API.
         [HttpGet("seed")]
         public async Task<string> Seed()
         {
