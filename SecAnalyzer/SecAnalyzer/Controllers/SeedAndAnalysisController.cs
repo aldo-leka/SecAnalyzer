@@ -156,7 +156,7 @@ namespace SecAnalyzer.Controllers
                     ++years;
 
                     topYearlyStocks.AddRange(stocks
-                        .OrderBy(stock => stock.MarketCap)
+                        .OrderByDescending(stock => stock.MarketCap)
                         .Take(500)
                         .ToList()
                     );
