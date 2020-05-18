@@ -49,7 +49,7 @@ namespace SecAnalyzer.Controllers
         }
 
         /// <summary>
-        /// Get top 30 cheapest stocks based on enterprise value / operating earnings aka VC acquirer's multiple
+        /// Get top 30 cheapest stocks based on enterprise value / operating earnings aka VC acquirer's multiple.
         /// </summary>
         [HttpGet("acquirersmultiple")]
         public string GetAcquirersMultiple(decimal initialAmount = 10000)
@@ -69,7 +69,7 @@ namespace SecAnalyzer.Controllers
 
             var years = 0;
 
-            //TODO Sell only if worth selling...
+            //TODO Sell only if worth selling.
             foreach (var grouping in groupings)
             {
                 var topYearlyStocks = new List<Stock>();
@@ -77,11 +77,7 @@ namespace SecAnalyzer.Controllers
                 var stocks = grouping.Where(stock =>
                     stock.MarketCap > 0 &&
                     stock.Revenue - stock.CostOfRevenue - stock.ResearchAndDevelopmentCosts - stock.SellingGeneralAndAdministrativeCosts - stock.DepreciationAndAmortization != 0
-                    && stock.YearlyStartSharePrice > 0 && stock.YearlyEndSharePrice > 0
-                            /*&& !(stock.MarketCap + stock.TotalDebt - stock.Cash > 0 
-                                && stock.Revenue - stock.CostOfRevenue - stock.ResearchAndDevelopmentCosts - stock.SellingGeneralAndAdministrativeCosts - stock.DepreciationAndAmortization < 0
-                                && (decimal)(stock.MarketCap + stock.TotalDebt - stock.Cash) 
-                                    / (stock.Revenue - stock.CostOfRevenue - stock.ResearchAndDevelopmentCosts - stock.SellingGeneralAndAdministrativeCosts - stock.DepreciationAndAmortization) < -20)*/);
+                    && stock.YearlyStartSharePrice > 0 && stock.YearlyEndSharePrice > 0);
 
                 if (stocks.Count() > 0)
                 {
@@ -101,27 +97,6 @@ namespace SecAnalyzer.Controllers
                         .Select(entity => entity.Stock)
                         .ToList()
                     );
-
-                    //var temp = stocks.Select(stock => new
-                    //{
-                    //    //TODO
-                    //    //Add price of specific reporting date (FilingDatePrice) and 1 year after that (FilingDateAfterOneYearPrice).
-                    //    AcquirersMultiple = (decimal)(stock.MarketCap + stock.TotalDebt - stock.Cash)
-                    //            / (stock.Revenue - stock.CostOfRevenue - stock.ResearchAndDevelopmentCosts - stock.SellingGeneralAndAdministrativeCosts - stock.DepreciationAndAmortization),
-                    //    BFirstPartOfEquation = stock.MarketCap + stock.TotalDebt - stock.Cash,
-                    //    CSecondPartOfEquation = stock.Revenue - stock.CostOfRevenue - stock.ResearchAndDevelopmentCosts - stock.SellingGeneralAndAdministrativeCosts - stock.DepreciationAndAmortization,
-                    //    stock.MarketCap,
-                    //    stock.TotalDebt,
-                    //    stock.Cash,
-                    //    stock.Revenue,
-                    //    stock.CostOfRevenue,
-                    //    stock.ResearchAndDevelopmentCosts,
-                    //    stock.SellingGeneralAndAdministrativeCosts,
-                    //    stock.DepreciationAndAmortization
-                    //})
-                    //.OrderBy(entity => entity.AcquirersMultiple)
-                    //.Take(30)
-                    //.ToList();
 
                     //Possibilities
                     //Negative EV, Positive earnings = - GOOD (more cash, positive earnings)
@@ -154,7 +129,7 @@ namespace SecAnalyzer.Controllers
         }
 
         /// <summary>
-        /// Get top 500 most expensive stocks returns
+        /// Get top 500 most expensive stocks returns.
         /// </summary>
         [HttpGet("expensivemarket")]
         public string GetExpensiveMarket(decimal initialAmount = 10000)
@@ -208,6 +183,9 @@ namespace SecAnalyzer.Controllers
             return result;
         }
 
+        /// <summary>
+        /// Used to patch database (new or empty) columns with new data. Currently for start and end stock prices.
+        /// </summary>
         [HttpGet("test")]
         public async Task<string> GetTest()
         {
@@ -244,29 +222,14 @@ namespace SecAnalyzer.Controllers
             _context.SaveChanges();
 
             var apiStocks = await _fmpCloudClient.GetAllStocks();
-            //var enterpriseValuesTasks = new Dictionary<string, Task<IEnumerable<YearlyEnterpriseValue>>>();
-            //var balanceSheetsTasks = new Dictionary<string, Task<IEnumerable<YearlyBalanceSheet>>>();
-            //var incomeStatementsTasks = new Dictionary<string, Task<IEnumerable<YearlyIncomeStatement>>>();
-            //var keyMetricsTasks = new Dictionary<string, Task<IEnumerable<YearlyKeyMetrics>>>();
-
-            var limit = 10;
-            var counter = 0;
 
             //1. Iterate all stocks.
             foreach (var apiStock in apiStocks)
             {
-                //2. Get Market caps + Balance sheets + Income statements + Key metrics for all stocks for all available years.
-                //enterpriseValuesTasks.Add(apiStock.Symbol, _fmpCloudClient.GetYearlyEnterpriseValues(apiStock.Symbol));
-                //balanceSheetsTasks.Add(apiStock.Symbol, _fmpCloudClient.GetYearlyBalanceSheets(apiStock.Symbol));
-                //incomeStatementsTasks.Add(apiStock.Symbol, _fmpCloudClient.GetYearlyIncomeStatements(apiStock.Symbol));
-                //keyMetricsTasks.Add(apiStock.Symbol, _fmpCloudClient.GetYearlyKeyMetrics(apiStock.Symbol));
-
-                //var yearlyEnterpriseValuesTask = _fmpCloudClient.GetYearlyEnterpriseValues(apiStock.Symbol);
                 var yearlyBalanceSheetsTask = _fmpCloudClient.GetYearlyBalanceSheets(apiStock.Symbol);
                 var yearlyIncomeStatementsTask = _fmpCloudClient.GetYearlyIncomeStatements(apiStock.Symbol);
                 var yearlyKeyMetricsTask = _fmpCloudClient.GetYearlyKeyMetrics(apiStock.Symbol);
                 var dayPricesTask = _fmpCloudClient.GetDailyPrices(apiStock.Symbol);
-                //var yearlyEnterpriseValues = await yearlyEnterpriseValuesTask;
 
                 var yearlyBalanceSheets = new List<YearlyBalanceSheet>();
                 var yearlyIncomeStatements = new List<YearlyIncomeStatement>();
@@ -337,22 +300,6 @@ namespace SecAnalyzer.Controllers
                 }
 
                 var stocks = new List<Stock>();
-
-                //foreach (var yearlyEnterpriseValue in yearlyEnterpriseValues)
-                //{
-                //    var year = DateTime.ParseExact(yearlyEnterpriseValue.Date, "yyyy-MM-dd", null).Year;
-                //    var stock = stocks.Where(stock => stock.Year == year).FirstOrDefault();
-                //    if (stock == null)
-                //    {
-                //        stock = new Stock
-                //        {
-                //            Symbol = apiStock.Symbol,
-                //            Year = year
-                //        };
-                //        stocks.Add(stock);
-                //    }
-                //    stock.MarketCap = yearlyEnterpriseValue.MarketCap;
-                //}
 
                 foreach (var yearlyBalanceSheet in yearlyBalanceSheets)
                 {
@@ -435,32 +382,7 @@ namespace SecAnalyzer.Controllers
             }
 
             //TODO
-            //It's probably faster to await all tasks instead of batches like above.
-            //var stocks = new Dictionary<string, Stock[]>();
-            //foreach(var pair in enterpriseValuesTasks)
-            //{
-            //    var enterpriseValues = await pair.Value;
-            //    foreach (var enterpriseValue in enterpriseValues)
-            //    {
-            //        var year = DateTime.ParseExact(enterpriseValue.Date, "yyyy-MM-dd", null).Year;
-            //        //Existing stock with matching symbol and year.
-            //        var existingStock = stocks
-            //            .Where(stockPair => stockPair.Key == pair.Key && stockPair.Value.Year == year)
-            //            .FirstOrDefault()
-            //            .Value;
-            //        //TODO Is value ever null?
-            //        if (existingStock == null)
-            //        {
-            //            existingStock = new Stock
-            //            {
-            //                Symbol = pair.Key,
-            //                Year = year
-            //            };
-            //            stocks.Add(pair.Key, existingStock);
-            //        }
-            //        existingStock.MarketCap = enterpriseValue.MarketCap;
-            //    }
-            //}
+            //Await all tasks instead of batches like above to optimize the speed.
 
             return $"Updated db with {apiStocks.Count()} stocks.";
         }
